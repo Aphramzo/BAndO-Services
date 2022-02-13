@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "aws-xray-sdk-core": "^3.3.4",
+    "axios": "^0.26.0",
     "debug": "^4.3.3"
   }
 }
