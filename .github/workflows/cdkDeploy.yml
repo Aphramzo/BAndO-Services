@@ -77,6 +77,7 @@ jobs:
         run: |
           npm ci && npm run build
       - name: deploy
+        id: deploy
         env:
           ENV_NAME: prod
           CORS_DOMAIN: https://odinandbrokk.com
