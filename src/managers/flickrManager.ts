@@ -10,11 +10,12 @@ const flickrParams =
   '&format=json&nojsoncallback=1&sort=date-taken-desc';
 
 export function FlickrResponseToImages(
-  response: iFlickrApiResponse | undefined,
+  response: { data: iFlickrApiResponse } | undefined,
 ): Array<iImage> {
-  if (!response) return [];
+  console.debug('result from flickr', response);
+  if (!response || !response.data) return [];
 
-  return response.photos.photo.map((photo: iFlickrPhoto) => ({
+  return response.data.photos.photo.map((photo: iFlickrPhoto) => ({
     date: photo.datetaken,
     description: photo.description['_content'],
     largeHeight: photo.height_l,
