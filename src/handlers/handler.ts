@@ -8,13 +8,13 @@ type GetImagesHandlerProps = HandlerEvent<GetImagesHandlerPath>;
 async function asyncGetImages(
   event: GetImagesHandlerProps,
 ): Promise<APIGatewayProxyResult> {
-  logger.debug('in asyncGetImages handler');
+  logger('in asyncGetImages handler');
 
   const { perPage, pageNumber } = event.pathParameters;
 
-  logger.info('Looking up images for ', perPage, pageNumber);
+  logger('Looking up images for ', perPage, pageNumber);
 
-  return { statusCode: 200 };
+  return { statusCode: 200, body: 'Ok' };
 }
 
 export async function getImages(

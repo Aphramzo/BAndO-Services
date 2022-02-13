@@ -12,10 +12,10 @@ export async function asyncHandlerWithStatus<T>(
   try {
     AWSXRay.capturePromise();
     const result = await method(event);
-    logger.debug('result', result);
+    logger('result', result);
     return result;
   } catch (e: any) {
-    logger.console.error(e);
+    logger(e);
     // if we return a status code in the 400's, return it to the user instead of throwing
     if (e.statusCode && e.statusCode < 500) {
       return e;
