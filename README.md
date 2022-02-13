@@ -1,2 +1,3 @@
 # BAndO-Services
-Backend services to support b and o
+
+Backend services to support the brokkandodin.com site

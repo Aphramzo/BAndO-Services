@@ -1,0 +1,35 @@
+{
+  "name": "bando-services",
+  "version": "1.0.0",
+  "description": "Backend services to support the brokkandodin.com site",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aphramzo/BAndO-Services.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Aphramzo/BAndO-Services/issues"
+  },
+  "homepage": "https://github.com/Aphramzo/BAndO-Services#readme",
+  "devDependencies": {
+    "@aws-cdk/aws-apigateway": "^1.144.0",
+    "@aws-cdk/aws-cognito": "^1.144.0",
+    "@aws-cdk/aws-lambda": "^1.144.0",
+    "@aws-cdk/aws-lambda-nodejs": "^1.144.0",
+    "@aws-cdk/core": "^1.144.0",
+    "@types/node": "^17.0.17",
+    "aws-lambda": "^1.0.7",
+    "aws-sdk": "^2.1073.0",
+    "module": "^1.2.5",
+    "prettier": "^2.5.1"
+  },
+  "dependencies": {
+    "aws-xray-sdk-core": "^3.3.4",
+    "debug": "^4.3.3"
+  }
+}
