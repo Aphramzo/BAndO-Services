@@ -55,6 +55,8 @@ jobs:
           ENV_NAME: local
           CORS_DOMAIN: https://odinandbrokk.com
           LOG_LEVEL: debug
+          FLICKR_USER: ${{ secrets.FLICKR_USER }}
+          FLICKR_API_KEY: ${{ secrets.FLICKR_API_KEY }}
         run: cdk deploy --require-approval=never
   aws_cdk_production:
     if: github.event.label.name == 'deploy'
@@ -82,6 +84,8 @@ jobs:
           ENV_NAME: prod
           CORS_DOMAIN: https://odinandbrokk.com
           LOG_LEVEL: info
+          FLICKR_USER: ${{ secrets.FLICKR_USER }}
+          FLICKR_API_KEY: ${{ secrets.FLICKR_API_KEY }}
         run: cdk deploy --require-approval=never
       - name: If deployment succeeds, automatically merge PR
         if: steps.deploy.outcome == 'success'

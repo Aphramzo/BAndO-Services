@@ -13,6 +13,8 @@ export type DefaultProcessEnv = {
   ENV_NAME: Env;
   CORS_DOMAIN: string;
   LOG_LEVEL: string;
+  FLICKR_USER: string;
+  FLICKR_API_KEY: string;
 };
 
 export class BandoServiceStack extends cdk.Stack {
@@ -23,6 +25,8 @@ export class BandoServiceStack extends cdk.Stack {
       ENV_NAME: envName,
       CORS_DOMAIN: corsDomain,
       LOG_LEVEL: logLevel,
+      FLICKR_USER,
+      FLICKR_API_KEY,
     } = process.env as DefaultProcessEnv;
     const accountId = cdk.Stack.of(this).account;
     const region = cdk.Stack.of(this).region;
@@ -66,6 +70,8 @@ export class BandoServiceStack extends cdk.Stack {
       corsDomain,
       envName,
       logLevel,
+      FLICKR_USER,
+      FLICKR_API_KEY,
     };
 
     const getImagesFunction = createFunction(

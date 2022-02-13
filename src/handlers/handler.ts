@@ -2,6 +2,7 @@ import { APIGatewayProxyResult } from 'aws-lambda';
 import Debug from 'debug';
 import { asyncHandlerWithStatus } from '../utils/utils';
 import { GetImagesHandlerPath, HandlerEvent } from '../models/handlers';
+import { GetRecent } from '../managers/flickrManager';
 const logger = Debug('handler');
 type GetImagesHandlerProps = HandlerEvent<GetImagesHandlerPath>;
 
@@ -14,7 +15,8 @@ async function asyncGetImages(
 
   logger('Looking up images for ', perPage, pageNumber);
 
-  return { statusCode: 200, body: 'Ok' };
+  const result = await GetRecent(pageNumber, perPage);
+  return { statusCode: 200, body: JSON.stringify(result) };
 }
 
 export async function getImages(
