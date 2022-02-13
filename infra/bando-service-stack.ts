@@ -62,7 +62,7 @@ export class BandoServiceStack extends cdk.Stack {
         ],
         allowMethods: ['OPTIONS', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
         allowCredentials: true,
-        allowOrigins: [...(corsDomain ? corsDomain.split(',') : ['*'])],
+        allowOrigins: ['*'],
       },
     });
 
