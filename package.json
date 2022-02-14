@@ -18,7 +18,9 @@
   },
   "homepage": "https://github.com/Aphramzo/BAndO-Services#readme",
   "devDependencies": {
-    "@aws-cdk/aws-apigateway": "^1.144.0",
+    "@aws-cdk/aws-apigatewayv2": "^1.144.0",
+    "@aws-cdk/aws-apigatewayv2-authorizers": "^1.144.0",
+    "@aws-cdk/aws-apigatewayv2-integrations": "^1.144.0",
     "@aws-cdk/aws-cognito": "^1.144.0",
     "@aws-cdk/aws-lambda": "^1.144.0",
     "@aws-cdk/aws-lambda-nodejs": "^1.144.0",

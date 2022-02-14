@@ -6,7 +6,7 @@ const logger = Debug('utils');
 AWSXRay.captureHTTPsGlobal(require('http'), false); // eslint-disable-line @typescript-eslint/no-var-requires
 AWSXRay.captureHTTPsGlobal(require('https'), false); // eslint-disable-line @typescript-eslint/no-var-requires
 
-function getRequestOrigin(
+function getAllowedOrigin(
   e: APIGatewayEvent,
   allAllowedDomains: string[],
 ): string {
@@ -27,7 +27,7 @@ function getRequestOrigin(
   return corsDomain;
 }
 
-function addCors(
+function addHeaders(
   result: APIGatewayProxyResult,
   event: APIGatewayEvent,
 ): APIGatewayProxyResult {
@@ -36,10 +36,11 @@ function addCors(
   if (!allowedCors) return result;
   result.headers = result.headers || {};
 
-  result.headers['Access-Control-Allow-Origin'] = getRequestOrigin(
+  result.headers['Access-Control-Allow-Origin'] = getAllowedOrigin(
     event,
     allowedCors,
   );
+  result.headers['content-type'] = 'application/json';
 
   return result;
 }
@@ -52,12 +53,12 @@ export async function asyncHandlerWithStatus(
     AWSXRay.capturePromise();
     const result = await method(event);
     logger('result', result);
-    return addCors(result, event);
+    return addHeaders(result, event);
   } catch (e: any) {
     logger(e);
     // if we return a status code in the 400's, return it to the user instead of throwing
     if (e.statusCode && e.statusCode < 500) {
-      return e;
+      return addHeaders(e, event);
     }
     throw e;
   }

@@ -1,8 +1,12 @@
-import * as apigateway from '@aws-cdk/aws-apigateway';
+import * as apigateway from '@aws-cdk/aws-apigatewayv2';
+import * as apiGatewayAuthorizers from '@aws-cdk/aws-apigatewayv2-authorizers';
+import * as apiGatewayIntegrations from '@aws-cdk/aws-apigatewayv2-integrations';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as cognito from '@aws-cdk/aws-cognito';
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs';
 import * as cdk from '@aws-cdk/core';
+import { CorsHttpMethod } from '@aws-cdk/aws-apigatewayv2';
+import { UserPoolEmail } from '@aws-cdk/aws-cognito';
 
 export enum Env {
   local = 'local',
@@ -28,11 +32,9 @@ export class BandoServiceStack extends cdk.Stack {
       FLICKR_USER,
       FLICKR_API_KEY,
     } = process.env as DefaultProcessEnv;
-    const accountId = cdk.Stack.of(this).account;
-    const region = cdk.Stack.of(this).region;
     const stackName = `${envName}-bando-service`;
 
-    new cognito.UserPool(this, `${stackName}-userPool`, {
+    const userPool = new cognito.UserPool(this, `${stackName}-up`, {
       // ...
       selfSignUpEnabled: true,
       userVerification: {
@@ -42,25 +44,61 @@ export class BandoServiceStack extends cdk.Stack {
         smsMessage: 'Your verification code is {####}',
       },
       signInAliases: {
-        username: true,
         email: true,
         phone: true,
       },
+      email: cognito.UserPoolEmail.withCognito('im.t.wal@gmail.com'),
+      standardAttributes: {
+        email: {
+          required: true,
+          mutable: false,
+        },
+        phoneNumber: {
+          required: false,
+          mutable: true,
+        },
+      },
     });
 
-    const api = new apigateway.RestApi(this, `${stackName}-api`, {
-      restApiName: `${stackName}-api`,
+    new cognito.CfnUserPoolDomain(this, `${stackName}-upDomain`, {
+      userPoolId: userPool.userPoolId,
+      domain: stackName,
+    });
+
+    const userPoolClient = new cognito.UserPoolClient(
+      this,
+      `${stackName}-userPoolClient`,
+      {
+        userPool,
+        authFlows: {
+          userPassword: true,
+        },
+        supportedIdentityProviders: [
+          cognito.UserPoolClientIdentityProvider.COGNITO,
+        ],
+      },
+    );
+
+    const authorizer = new apiGatewayAuthorizers.HttpUserPoolAuthorizer(
+      `${stackName}-authorizer`,
+      userPool,
+      {
+        userPoolClients: [userPoolClient],
+        identitySource: ['$request.header.Authorization'],
+      },
+    );
+
+    const api = new apigateway.HttpApi(this, `${stackName}-api2`, {
+      apiName: `${stackName}-api`,
       description: 'Services to provide images and metadata for brokkandodin',
-      endpointTypes: [apigateway.EndpointType.REGIONAL],
-      apiKeySourceType: apigateway.ApiKeySourceType.HEADER,
-      defaultCorsPreflightOptions: {
+      corsPreflight: {
         allowHeaders: [
           'Content-Type',
           'X-Amz-Date',
           'Authorization',
           'X-Api-Key',
         ],
-        allowMethods: ['OPTIONS', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+        allowMethods: [CorsHttpMethod.GET, CorsHttpMethod.OPTIONS],
         allowCredentials: true,
         allowOrigins: [...(corsDomain ? corsDomain.split(',') : ['*'])],
       },
@@ -82,15 +120,16 @@ export class BandoServiceStack extends cdk.Stack {
       defaultLambdaEnvs,
     );
 
-    const getImagesResource = api.root.resourceForPath(
-      '/images/{pageNumber}/{perPage}',
-    );
-    getImagesResource.addMethod(
-      'GET',
-      new apigateway.LambdaIntegration(getImagesFunction, { proxy: true }),
-    );
+    api.addRoutes({
+      integration: new apiGatewayIntegrations.HttpLambdaIntegration(
+        'getImagesIntegration',
+        getImagesFunction,
+      ),
+      path: '/images/{pageNumber}/{perPage}',
+      authorizer,
+    });
 
-    new cdk.CfnOutput(this, 'apiUrl', { value: api.url });
+    new cdk.CfnOutput(this, 'apiUrl', { value: api.url || '' });
 
     function createFunction(
       stack: cdk.Stack,
