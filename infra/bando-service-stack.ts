@@ -34,7 +34,7 @@ export class BandoServiceStack extends cdk.Stack {
     } = process.env as DefaultProcessEnv;
     const stackName = `${envName}-bando-service`;
 
-    const userPool = new cognito.UserPool(this, `${stackName}-userPool`, {
+    const userPool = new cognito.UserPool(this, `${stackName}-up`, {
       // ...
       selfSignUpEnabled: true,
       userVerification: {
