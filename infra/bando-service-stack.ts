@@ -1,8 +1,11 @@
-import * as apigateway from '@aws-cdk/aws-apigateway';
+import * as apigateway from '@aws-cdk/aws-apigatewayv2';
+import * as apiGatewayAuthorizers from '@aws-cdk/aws-apigatewayv2-authorizers';
+import * as apiGatewayIntegrations from '@aws-cdk/aws-apigatewayv2-integrations';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as cognito from '@aws-cdk/aws-cognito';
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs';
 import * as cdk from '@aws-cdk/core';
+import { CorsHttpMethod } from '@aws-cdk/aws-apigatewayv2';
 
 export enum Env {
   local = 'local',
@@ -28,8 +31,6 @@ export class BandoServiceStack extends cdk.Stack {
       FLICKR_USER,
       FLICKR_API_KEY,
     } = process.env as DefaultProcessEnv;
-    const accountId = cdk.Stack.of(this).account;
-    const region = cdk.Stack.of(this).region;
     const stackName = `${envName}-bando-service`;
 
     new cognito.UserPool(this, `${stackName}-userPool`, {
@@ -48,19 +49,26 @@ export class BandoServiceStack extends cdk.Stack {
       },
     });
 
-    const api = new apigateway.RestApi(this, `${stackName}-api`, {
-      restApiName: `${stackName}-api`,
+    // const authorizer = new apiGatewayAuthorizers.HttpUserPoolAuthorizer(
+    //   'user-pool-authorizer',
+    //   userPool,
+    //   {
+    //     userPoolClients: [userPoolClient],
+    //     identitySource: ['$request.header.Authorization'],
+    //   },
+    // );
+
+    const api = new apigateway.HttpApi(this, `${stackName}-api`, {
+      apiName: `${stackName}-api`,
       description: 'Services to provide images and metadata for brokkandodin',
-      endpointTypes: [apigateway.EndpointType.REGIONAL],
-      apiKeySourceType: apigateway.ApiKeySourceType.HEADER,
-      defaultCorsPreflightOptions: {
+      corsPreflight: {
         allowHeaders: [
           'Content-Type',
           'X-Amz-Date',
           'Authorization',
           'X-Api-Key',
         ],
-        allowMethods: ['OPTIONS', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+        allowMethods: [CorsHttpMethod.GET, CorsHttpMethod.OPTIONS],
         allowCredentials: true,
         allowOrigins: [...(corsDomain ? corsDomain.split(',') : ['*'])],
       },
@@ -82,13 +90,21 @@ export class BandoServiceStack extends cdk.Stack {
       defaultLambdaEnvs,
     );
 
-    const getImagesResource = api.root.resourceForPath(
-      '/images/{pageNumber}/{perPage}',
-    );
-    getImagesResource.addMethod(
-      'GET',
-      new apigateway.LambdaIntegration(getImagesFunction, { proxy: true }),
-    );
+    // const getImagesResource = api.root.resourceForPath(
+    //   '/images/{pageNumber}/{perPage}',
+    // );
+    // getImagesResource.addMethod(
+    //   'GET',
+    //   new apigateway.LambdaIntegration(getImagesFunction, { proxy: true }),
+    // );
+
+    api.addRoutes({
+      integration: new apiGatewayIntegrations.HttpLambdaIntegration(
+        'getImagesIntegration',
+        getImagesFunction,
+      ),
+      path: '/images/{pageNumber}/{perPage}',
+    });
 
     new cdk.CfnOutput(this, 'apiUrl', { value: api.url });
 
