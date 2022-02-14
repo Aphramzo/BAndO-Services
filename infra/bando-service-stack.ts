@@ -106,7 +106,7 @@ export class BandoServiceStack extends cdk.Stack {
       path: '/images/{pageNumber}/{perPage}',
     });
 
-    new cdk.CfnOutput(this, 'apiUrl', { value: api.url });
+    new cdk.CfnOutput(this, 'apiUrl', { value: api.url || '' });
 
     function createFunction(
       stack: cdk.Stack,
