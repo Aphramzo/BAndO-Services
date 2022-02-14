@@ -53,7 +53,7 @@ jobs:
       - name: Deploy
         env:
           ENV_NAME: local
-          CORS_DOMAIN: https://odinandbrokk.com
+          CORS_DOMAIN: https://odinandbrokk.com,http://brokkandodin.com,http://localhost:3000
           LOG_LEVEL: debug
           FLICKR_USER: ${{ secrets.FLICKR_USER }}
           FLICKR_API_KEY: ${{ secrets.FLICKR_API_KEY }}
