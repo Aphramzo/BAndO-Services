@@ -14,7 +14,7 @@ function getRequestOrigin(
   const { headers } = e;
   console.info('headers', headers);
   const requestOrigin =
-    headers && headers.Origin ? headers.Origin.toLowerCase() : undefined;
+    headers && headers.origin ? headers.origin.toLowerCase() : undefined;
 
   console.info('requestO', requestOrigin);
   const allowedDomain = allAllowedDomains.find(
