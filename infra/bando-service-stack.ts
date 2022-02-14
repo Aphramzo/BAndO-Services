@@ -33,7 +33,7 @@ export class BandoServiceStack extends cdk.Stack {
     } = process.env as DefaultProcessEnv;
     const stackName = `${envName}-bando-service`;
 
-    new cognito.UserPool(this, `${stackName}-userPool`, {
+    const userPool = new cognito.UserPool(this, `${stackName}-userPool`, {
       // ...
       selfSignUpEnabled: true,
       userVerification: {
@@ -49,14 +49,32 @@ export class BandoServiceStack extends cdk.Stack {
       },
     });
 
-    // const authorizer = new apiGatewayAuthorizers.HttpUserPoolAuthorizer(
-    //   'user-pool-authorizer',
-    //   userPool,
-    //   {
-    //     userPoolClients: [userPoolClient],
-    //     identitySource: ['$request.header.Authorization'],
-    //   },
-    // );
+    const userPoolClient = new cognito.UserPoolClient(
+      this,
+      `${stackName}-userPoolClient`,
+      {
+        userPool,
+        authFlows: {
+          adminUserPassword: true,
+          userPassword: true,
+          custom: true,
+          userSrp: true,
+        },
+        supportedIdentityProviders: [
+          cognito.UserPoolClientIdentityProvider.COGNITO,
+          cognito.UserPoolClientIdentityProvider.GOOGLE,
+        ],
+      },
+    );
+
+    const authorizer = new apiGatewayAuthorizers.HttpUserPoolAuthorizer(
+      `${stackName}-authorizer`,
+      userPool,
+      {
+        userPoolClients: [userPoolClient],
+        identitySource: ['$request.header.Authorization'],
+      },
+    );
 
     const api = new apigateway.HttpApi(this, `${stackName}-api2`, {
       apiName: `${stackName}-api`,
@@ -90,20 +108,13 @@ export class BandoServiceStack extends cdk.Stack {
       defaultLambdaEnvs,
     );
 
-    // const getImagesResource = api.root.resourceForPath(
-    //   '/images/{pageNumber}/{perPage}',
-    // );
-    // getImagesResource.addMethod(
-    //   'GET',
-    //   new apigateway.LambdaIntegration(getImagesFunction, { proxy: true }),
-    // );
-
     api.addRoutes({
       integration: new apiGatewayIntegrations.HttpLambdaIntegration(
         'getImagesIntegration',
         getImagesFunction,
       ),
       path: '/images/{pageNumber}/{perPage}',
+      authorizer,
     });
 
     new cdk.CfnOutput(this, 'apiUrl', { value: api.url || '' });
