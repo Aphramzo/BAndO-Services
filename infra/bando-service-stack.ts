@@ -49,6 +49,11 @@ export class BandoServiceStack extends cdk.Stack {
       },
     });
 
+    new cognito.CfnUserPoolDomain(this, `${stackName}-upDomain`, {
+      userPoolId: userPool.userPoolId,
+      domain: stackName,
+    });
+
     const userPoolClient = new cognito.UserPoolClient(
       this,
       `${stackName}-userPoolClient`,
