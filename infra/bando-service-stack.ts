@@ -47,10 +47,7 @@ export class BandoServiceStack extends cdk.Stack {
         email: true,
         phone: true,
       },
-      email: cognito.UserPoolEmail.withSES({
-        fromEmail: 'im.t.wal@gmail.com',
-        fromName: 'Brokk And Odin',
-      }),
+      email: cognito.UserPoolEmail.withCognito('im.t.wal@gmail.com'),
       standardAttributes: {
         email: {
           required: true,
