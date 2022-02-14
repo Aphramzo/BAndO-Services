@@ -6,6 +6,7 @@ import * as cognito from '@aws-cdk/aws-cognito';
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs';
 import * as cdk from '@aws-cdk/core';
 import { CorsHttpMethod } from '@aws-cdk/aws-apigatewayv2';
+import { UserPoolEmail } from '@aws-cdk/aws-cognito';
 
 export enum Env {
   local = 'local',
@@ -43,9 +44,22 @@ export class BandoServiceStack extends cdk.Stack {
         smsMessage: 'Your verification code is {####}',
       },
       signInAliases: {
-        username: true,
         email: true,
         phone: true,
+      },
+      email: cognito.UserPoolEmail.withSES({
+        fromEmail: 'im.t.wal@gmail.com',
+        fromName: 'Brokk And Odin',
+      }),
+      standardAttributes: {
+        email: {
+          required: true,
+          mutable: false,
+        },
+        phoneNumber: {
+          required: false,
+          mutable: true,
+        },
       },
     });
 
@@ -60,10 +74,7 @@ export class BandoServiceStack extends cdk.Stack {
       {
         userPool,
         authFlows: {
-          adminUserPassword: true,
           userPassword: true,
-          custom: true,
-          userSrp: true,
         },
         supportedIdentityProviders: [
           cognito.UserPoolClientIdentityProvider.COGNITO,
