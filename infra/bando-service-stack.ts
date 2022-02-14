@@ -62,7 +62,7 @@ export class BandoServiceStack extends cdk.Stack {
         ],
         allowMethods: ['OPTIONS', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
         allowCredentials: true,
-        allowOrigins: ['*'],
+        allowOrigins: [...(corsDomain ? corsDomain.split(',') : ['*'])],
       },
     });
 
@@ -85,6 +85,17 @@ export class BandoServiceStack extends cdk.Stack {
     const getImagesResource = api.root.resourceForPath(
       '/images/{pageNumber}/{perPage}',
     );
+    getImagesResource.addCorsPreflight({
+      allowHeaders: [
+        'Content-Type',
+        'X-Amz-Date',
+        'Authorization',
+        'X-Api-Key',
+      ],
+      allowMethods: ['OPTIONS', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+      allowCredentials: true,
+      allowOrigins: [...(corsDomain ? corsDomain.split(',') : ['*'])],
+    });
     getImagesResource.addMethod(
       'GET',
       new apigateway.LambdaIntegration(getImagesFunction, { proxy: true }),
