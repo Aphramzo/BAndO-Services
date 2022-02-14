@@ -47,7 +47,6 @@ export class BandoServiceStack extends cdk.Stack {
         email: true,
         phone: true,
       },
-      s,
     });
 
     const userPoolClient = new cognito.UserPoolClient(
