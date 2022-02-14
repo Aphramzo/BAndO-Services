@@ -58,7 +58,7 @@ export class BandoServiceStack extends cdk.Stack {
     //   },
     // );
 
-    const api = new apigateway.HttpApi(this, `${stackName}-api`, {
+    const api = new apigateway.HttpApi(this, `${stackName}-api2`, {
       apiName: `${stackName}-api`,
       description: 'Services to provide images and metadata for brokkandodin',
       corsPreflight: {
