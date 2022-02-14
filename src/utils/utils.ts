@@ -1,19 +1,58 @@
 import * as AWSXRay from 'aws-xray-sdk-core';
-import { APIGatewayProxyResult } from 'aws-lambda';
+import { APIGatewayProxyResult, APIGatewayEvent } from 'aws-lambda';
 import Debug from 'debug';
+// import { APIGatewayEvent } from '../models/handlers';
 const logger = Debug('utils');
 AWSXRay.captureHTTPsGlobal(require('http'), false); // eslint-disable-line @typescript-eslint/no-var-requires
 AWSXRay.captureHTTPsGlobal(require('https'), false); // eslint-disable-line @typescript-eslint/no-var-requires
 
-export async function asyncHandlerWithStatus<T>(
-  event: T,
-  method: (event: T) => Promise<APIGatewayProxyResult>,
+function getRequestOrigin(
+  e: APIGatewayEvent,
+  allAllowedDomains: string[],
+): string {
+  const { headers } = e;
+  const requestOrigin =
+    headers && headers.Origin ? headers.Origin.toLowerCase() : undefined;
+
+  const allowedDomain = allAllowedDomains.find(
+    (domain) => domain.toLowerCase() === requestOrigin,
+  );
+  let corsDomain: string;
+  if (allowedDomain) {
+    corsDomain = allowedDomain;
+  } else {
+    [corsDomain] = allAllowedDomains;
+  }
+
+  return corsDomain;
+}
+
+function addCors(
+  result: APIGatewayProxyResult,
+  event: APIGatewayEvent,
+): APIGatewayProxyResult {
+  const { corsDomain } = process.env;
+  const allowedCors = corsDomain?.split(',');
+  if (!allowedCors) return result;
+  result.headers = result.headers || {};
+
+  result.headers['Access-Control-Allow-Origin'] = getRequestOrigin(
+    event,
+    allowedCors,
+  );
+
+  return result;
+}
+
+export async function asyncHandlerWithStatus(
+  event: APIGatewayEvent,
+  method: (event: APIGatewayEvent) => Promise<APIGatewayProxyResult>,
 ): Promise<APIGatewayProxyResult> {
   try {
     AWSXRay.capturePromise();
     const result = await method(event);
     logger('result', result);
-    return result;
+    return addCors(result, event);
   } catch (e: any) {
     logger(e);
     // if we return a status code in the 400's, return it to the user instead of throwing
