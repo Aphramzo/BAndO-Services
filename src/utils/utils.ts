@@ -10,17 +10,13 @@ function getRequestOrigin(
   e: APIGatewayEvent,
   allAllowedDomains: string[],
 ): string {
-  console.info('allowd', allAllowedDomains);
   const { headers } = e;
-  console.info('headers', headers);
   const requestOrigin =
     headers && headers.origin ? headers.origin.toLowerCase() : undefined;
 
-  console.info('requestO', requestOrigin);
   const allowedDomain = allAllowedDomains.find(
     (domain) => domain.toLowerCase() === requestOrigin,
   );
-  console.info('allowed', allowedDomain);
   let corsDomain: string;
   if (allowedDomain) {
     corsDomain = allowedDomain;
@@ -36,7 +32,6 @@ function addCors(
   event: APIGatewayEvent,
 ): APIGatewayProxyResult {
   const { corsDomain } = process.env;
-  console.info('cors', corsDomain);
   const allowedCors = corsDomain?.split(',');
   if (!allowedCors) return result;
   result.headers = result.headers || {};
